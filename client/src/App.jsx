@@ -19,7 +19,15 @@ function App() {
 
   const sendEmail = async () => {
     try {
-      await axios.post("/send-email", emailData);
+      const email = await fetch("http://localhost:5173/send-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(emailData),
+      });
+      const data = await email.json();
+      console.log(data);
       console.log("Email sent successfully");
     } catch (error) {
       console.error("Error sending email", error);
