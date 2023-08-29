@@ -1,43 +1,57 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-const nodemailer = require('nodemailer');
+
 const cors = require('cors')
+const dotenv = require('dotenv');
+const { default: mongoose } = require('mongoose');
+const Mail = require('./model/mailsend');
+dotenv.config();
 
 
 const app = express();
+app.use(express.json());
+
 app.use(cors());
-app.use(bodyParser.json());
 
-// Configure Nodemailer transporter
-const transporter = nodemailer.createTransport({
-  service: 'Gmail',
-  auth: {
-    user: process.env.MY_MAIL,
-    pass:process.env.MY_PASSWORD,
-  },
-});
+const DB = process.env.DB_URI
 
+const getConnection = async ()=>{
+  try{
+    await mongoose.connect(DB)
+    console.log('Connection to Database Successful')
+  }catch(err){
+    console.log(err)
+  }
+}
+getConnection()
+
+app.get('/',(req,res)=>{
+  res.status(200).json({
+    message:'you hit this route'
+  })
+})
 // Handle email sending
-app.post('/send-email', (req, res) => {
-  const { to, subject, text } = req.body;
+app.post('/emails', async (req, res) => {
+  try{
+    const { sender, subject, text } = req.body;
+    const mailData = {...req.body}
+    const newMail = await Mail.create(mailData)
+    res.status(201).json({
+      status:'Success',
+      message:newMail
+    })
 
-  const mailOptions = {
-    from: process.env.MY_MAIL,
-    to,
-    subject,
-    text,
-  };
+  }catch(error){
+    res.status(400).json({
+      status:'failed',
+      message:'Something went wrong'
+    })
+  }
+
+
+ 
   
 
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.error(error);
-      res.status(500).send('Error sending email');
-    } else {
-      console.log('Email sent: ' + info.response);
-      res.status(200).send('Email sent successfully');
-    }
-  });
+
 });
 
 const PORT = process.env.PORT || 5000;

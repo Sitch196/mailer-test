@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import axios from "axios";
 import "./styles.css";
 
 function App() {
   const [emailData, setEmailData] = useState({
-    to: "",
+    sender: "",
     subject: "",
     text: "",
   });
@@ -19,15 +18,14 @@ function App() {
 
   const sendEmail = async () => {
     try {
-      const email = await fetch("http://localhost:5173/send-email", {
+      const email = await fetch("http://127.0.0.1:5000/emails", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(emailData),
       });
-      const data = await email.json();
-      console.log(data);
+      await email.json();
       console.log("Email sent successfully");
     } catch (error) {
       console.error("Error sending email", error);
@@ -38,11 +36,11 @@ function App() {
     <div className="container">
       <h1>Email Sending Example</h1>
       <div className="form-group">
-        <label>To:</label>
+        <label>Sender:</label>
         <input
           type="email"
-          name="to"
-          value={emailData.to}
+          name="sender"
+          value={emailData.sender}
           onChange={handleChange}
         />
       </div>
